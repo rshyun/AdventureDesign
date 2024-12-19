@@ -136,30 +136,31 @@ class PuzzleViewModel(
     }
 
     fun movePieceToNearestValidPosition(piece: PuzzlePiece, offsetX: Float, offsetY: Float, pieceSize: Float) {
-        if (!isValidMove(piece)) return
+        if (!isValidMove(piece)) return // 빈 타일과의 유효한 이동이 아니면 리턴
 
         // 이동 방향이 빈 타일 쪽인지 확인
-        val significantMove = when {
+        val moveTowardsEmpty = when {
             isHorizontalMove(piece) -> {
-                val moveTowardsEmpty = if (piece.currentX < emptyPiece.currentX)
-                    offsetX > pieceSize / 3
-                else
-                    offsetX < -pieceSize / 3
-                moveTowardsEmpty
+                if (piece.currentX < emptyPiece.currentX) {
+                    offsetX > pieceSize / 3 // 오른쪽으로 이동
+                } else {
+                    offsetX < -pieceSize / 3 // 왼쪽으로 이동
+                }
             }
             isVerticalMove(piece) -> {
-                val moveTowardsEmpty = if (piece.currentY < emptyPiece.currentY)
-                    offsetY > pieceSize / 3
-                else
-                    offsetY < -pieceSize / 3
-                moveTowardsEmpty
+                if (piece.currentY < emptyPiece.currentY) {
+                    offsetY > pieceSize / 3 // 아래로 이동
+                } else {
+                    offsetY < -pieceSize / 3 // 위로 이동
+                }
             }
-            else -> false
+            else -> false // 수평 또는 수직 이동이 아니라면 이동 불가
         }
 
-        if (significantMove) {
+        if (moveTowardsEmpty) {
+            // 빈 타일 쪽으로 이동이 확인된 경우 위치 교환
             piece.swapPositionWith(emptyPiece)
-            _puzzlePieces.value = _puzzlePieces.value.toList()
+            _puzzlePieces.value = _puzzlePieces.value.toList() // StateFlow 업데이트
             checkPuzzleSolved()
         }
     }

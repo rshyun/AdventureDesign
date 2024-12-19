@@ -18,7 +18,7 @@ import com.example.myadv.ui.screen.PuzzleBookScreen
 import com.example.myadv.ui.screen.SpaceshipShopScreen
 import com.example.myadv.data.isFirstLaunch
 import com.example.myadv.model.PuzzleViewModel
-import com.example.myadv.ui.screen.FinishScreen
+import com.example.myadv.ui.screen.ClearScreen
 import com.example.myadv.ui.screen.HintScreen
 import com.example.myadv.ui.screen.HomeSettingScreen
 import com.example.myadv.ui.screen.NameChangeScreen
@@ -27,7 +27,6 @@ import com.example.myadv.ui.screen.PuzzleSettingScreen
 import com.example.myadv.ui.screen.QuizFalseScreen
 import com.example.myadv.ui.screen.QuizScreen
 import com.example.myadv.ui.screen.QuizClearScreen
-import com.example.myadv.ui.screen.QuizExplainScreen
 import com.example.myadv.ui.screen.QuokkaScreen
 
 @Composable
@@ -46,7 +45,6 @@ fun AppNavigator(context: Context) {
         composable("explain_home_screen") { ExplainHomeScreen(navController = navController) }
         composable("explain_screen") { ExplainScreen(navController = navController) }
         composable("quiz_screen") { QuizScreen(navController = navController) }
-        composable("quiz_explain_screen") { QuizExplainScreen(navController = navController) }
         composable("true_screen") { QuizClearScreen(navController = navController) }
         composable("false_screen") { QuizFalseScreen(navController = navController) }
         composable("home_setting_screen") { HomeSettingScreen(navController = navController) }
@@ -54,7 +52,7 @@ fun AppNavigator(context: Context) {
         composable("hint_screen") { HintScreen(navController = navController) }
         composable("quokka_screen") { QuokkaScreen(navController = navController) }
         composable("name_change_screen") { NameChangeScreen(navController = navController, context = context) }
-        composable("finish_screen") { FinishScreen(navController = navController) }
+        composable("clear_screen") { ClearScreen(navController = navController) }
         composable("puzzle_screen/{puzzleId}") { backStackEntry ->
             val puzzleId = backStackEntry.arguments?.getString("puzzleId")?.toInt() ?: 1
             val puzzleData = PuzzleImageData.getPuzzleById(puzzleId)

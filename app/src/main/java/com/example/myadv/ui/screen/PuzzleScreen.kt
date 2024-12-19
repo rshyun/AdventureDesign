@@ -3,7 +3,6 @@ package com.example.myadv.ui.screen
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
@@ -24,6 +23,9 @@ import com.example.myadv.ui.components.PuzzleTopBar
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
+import com.example.myadv.ui.components.Bubble
+import kotlinx.coroutines.delay
 
 @Composable
 fun PuzzleScreen(
@@ -33,11 +35,17 @@ fun PuzzleScreen(
 ) {
     val puzzlePieces by puzzleViewModel.puzzlePieces.collectAsState()
     val isPuzzleSolved by puzzleViewModel.isPuzzleSolved.collectAsState()
+    var showUnclearImage by remember { mutableStateOf(false) }
     val density = LocalDensity.current
+    val showBubble = remember { mutableStateOf(false) }
 
     LaunchedEffect(isPuzzleSolved) {
         if (isPuzzleSolved) {
-            navController.navigate("quiz_explain_screen")
+            delay(500) // 0.5초 대기
+            showUnclearImage = true
+
+            delay(500) // 추가 대기
+            showBubble.value = true
         }
     }
 
@@ -57,88 +65,108 @@ fun PuzzleScreen(
                 .size(boxSize)
                 .background(Color.White),
         ) {
-            puzzlePieces.forEach { piece ->
-                if (!piece.isEmpty && piece.bitmap != null) {
-                    var offsetX by remember { mutableStateOf(0f) }
-                    var offsetY by remember { mutableStateOf(0f) }
-                    var isDragging by remember { mutableStateOf(false) }
+            // 빈 타일 먼저 그리기
+            puzzlePieces.filter { it.isEmpty }.forEach { piece ->
+                Box(
+                    modifier = Modifier
+                        .offset {
+                            IntOffset(
+                                (piece.currentX * (boxSize.toPx() / puzzleViewModel.gridSize)).toInt(),
+                                (piece.currentY * (boxSize.toPx() / puzzleViewModel.gridSize)).toInt()
+                            )
+                        }
+                        .size(pieceSize)
+                        .background(Color.White)
+                )
+            }
 
-                    Image(
-                        bitmap = piece.bitmap.asImageBitmap(),
-                        contentDescription = "Puzzle Piece ${piece.id}",
-                        modifier = Modifier
-                            .offset {
-                                IntOffset(
-                                    (piece.currentX * (boxSize.toPx() / puzzleViewModel.gridSize)).toInt() + if (isDragging) offsetX.toInt() else 0,
-                                    (piece.currentY * (boxSize.toPx() / puzzleViewModel.gridSize)).toInt() + if (isDragging) offsetY.toInt() else 0
-                                )
-                            }
-                            .size(pieceSize)
-                            .pointerInput(Unit) {
-                                detectDragGestures(
-                                    onDragStart = {
-                                        if (puzzleViewModel.isValidMove(piece)) {
-                                            isDragging = true
-                                            offsetX = 0f
-                                            offsetY = 0f
-                                        }
-                                    },
-                                    onDragEnd = {
-                                        if (isDragging) {
-                                            puzzleViewModel.movePieceToNearestValidPosition(
-                                                piece,
-                                                offsetX,
-                                                offsetY,
-                                                boxSize.value * density.density / puzzleViewModel.gridSize
+            // 나머지 퍼즐 조각 그리기
+            puzzlePieces.filter { !it.isEmpty && it.bitmap != null }.forEach { piece ->
+                var offsetX by remember { mutableStateOf(0f) }
+                var offsetY by remember { mutableStateOf(0f) }
+                var isDragging by remember { mutableStateOf(false) }
+
+                Image(
+                    bitmap = piece.bitmap!!.asImageBitmap(),
+                    contentDescription = "Puzzle Piece ${piece.id}",
+                    modifier = Modifier
+                        .offset {
+                            IntOffset(
+                                (piece.currentX * (boxSize.toPx() / puzzleViewModel.gridSize)).toInt() + if (isDragging) offsetX.toInt() else 0,
+                                (piece.currentY * (boxSize.toPx() / puzzleViewModel.gridSize)).toInt() + if (isDragging) offsetY.toInt() else 0
+                            )
+                        }
+                        .size(pieceSize)
+                        .pointerInput(Unit) {
+                            detectDragGestures(
+                                onDragStart = {
+                                    if (puzzleViewModel.isValidMove(piece)) {
+                                        isDragging = true
+                                        offsetX = 0f
+                                        offsetY = 0f
+                                    }
+                                },
+                                onDragEnd = {
+                                    if (isDragging) {
+                                        puzzleViewModel.movePieceToNearestValidPosition(
+                                            piece,
+                                            offsetX,
+                                            offsetY,
+                                            boxSize.value * density.density / puzzleViewModel.gridSize
+                                        )
+                                    }
+                                    isDragging = false
+                                    offsetX = 0f
+                                    offsetY = 0f
+                                },
+                                onDragCancel = {
+                                    isDragging = false
+                                    offsetX = 0f
+                                    offsetY = 0f
+                                },
+                                onDrag = { change, dragAmount ->
+                                    if (isDragging) {
+                                        change.consume()
+                                        val newOffsetX = offsetX + dragAmount.x
+                                        val newOffsetY = offsetY + dragAmount.y
+
+                                        if (puzzleViewModel.isHorizontalMove(piece)) {
+                                            offsetX = newOffsetX.coerceIn(
+                                                -pieceSize.toPx(),
+                                                pieceSize.toPx()
+                                            )
+                                        } else if (puzzleViewModel.isVerticalMove(piece)) {
+                                            offsetY = newOffsetY.coerceIn(
+                                                -pieceSize.toPx(),
+                                                pieceSize.toPx()
                                             )
                                         }
-                                        isDragging = false
-                                        offsetX = 0f
-                                        offsetY = 0f
-                                    },
-                                    onDragCancel = {
-                                        isDragging = false
-                                        offsetX = 0f
-                                        offsetY = 0f
-                                    },
-                                    onDrag = { change, dragAmount ->
-                                        if (isDragging) {
-                                            change.consume()
-                                            // Calculate new potential position
-                                            val newOffsetX = offsetX + dragAmount.x
-                                            val newOffsetY = offsetY + dragAmount.y
-
-                                            // Only allow movement in one direction based on empty tile position
-                                            if (puzzleViewModel.isHorizontalMove(piece)) {
-                                                offsetX = newOffsetX.coerceIn(
-                                                    -pieceSize.toPx(),
-                                                    pieceSize.toPx()
-                                                )
-                                            } else if (puzzleViewModel.isVerticalMove(piece)) {
-                                                offsetY = newOffsetY.coerceIn(
-                                                    -pieceSize.toPx(),
-                                                    pieceSize.toPx()
-                                                )
-                                            }
-                                        }
                                     }
-                                )
-                            }
-                    )
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .offset {
-                                IntOffset(
-                                    (piece.currentX * (boxSize.toPx() / puzzleViewModel.gridSize)).toInt(),
-                                    (piece.currentY * (boxSize.toPx() / puzzleViewModel.gridSize)).toInt()
-                                )
-                            }
-                            .size(pieceSize)
-                            .background(Color.White)
-                    )
-                }
+                                }
+                            )
+                        }
+                )
             }
+        }
+
+        if (showUnclearImage) {
+            Image(
+                painter = painterResource(id = R.drawable.puzzle_image_1_unclear),
+                contentDescription = "Unclear Image",
+                modifier = Modifier.size(600.dp)
+            )
+        }
+
+        if (showBubble.value) {
+            Bubble(
+                bubbleText = "우와! 퍼즐을 다 맞췄어! 이제 마지막 단계야! 이곳을 깨끗하게 만들고 싶다면 내가 내는 퀴즈를 맞혀줘! 퀴즈를 풀면, 더러웠던 환경이 반짝반짝 깨끗하게 바뀔 거야! 준비됐지? 한 번 가볼까?",
+                quokkaImageRes = R.drawable.name_quokka,
+                onNextClick = { navController.navigate("quiz_screen") },
+                quokkaSize = 540.dp,
+                quokkaOffsetX = (-30).dp,
+                quokkaOffsetY = (-90).dp,
+                NameBoxOffsetY = (-240).dp
+            )
         }
     }
 }
@@ -165,7 +193,7 @@ fun PuzzleScreenPreview() {
     ) {
         Box(
             modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center // Surface 내부의 중앙 정렬
+            contentAlignment = Alignment.Center
         ) {
             PuzzleScreen(
                 navController = rememberNavController(),
