@@ -97,37 +97,19 @@ fun SpaceshipShopScreen(navController: NavController) {
             ) {
                 // 왼쪽 콘텐츠
                 Column(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                    verticalArrangement = Arrangement.Bottom // 쿼카를 아래로 정렬
                 ) {
                     // 쿼카 이미지
                     Image(
                         painter = painterResource(id = R.drawable.home_quokka),
                         contentDescription = "쿼카",
-                        modifier = Modifier.size(200.dp)
+                        modifier = Modifier
+                            .size(200.dp)
+                            .padding(bottom = 24.dp) // 아래쪽으로 추가 패딩 설정
                     )
-                }
-
-                // 중앙 콘텐츠: 아이템 버튼
-                Column(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .weight(0.5f),
-                    verticalArrangement = Arrangement.SpaceEvenly,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    items.forEach { item ->
-                        Icon(
-                            painter = painterResource(id = item),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(50.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(Color.LightGray.copy(alpha = 0.5f))
-                                .padding(8.dp)
-                        )
-                    }
                 }
 
                 // 오른쪽 콘텐츠: 모자 목록

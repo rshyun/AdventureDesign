@@ -1,5 +1,7 @@
 package com.example.myadv.ui.screen
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -27,6 +30,8 @@ import com.example.myadv.ui.components.PuzzleTopBar
 
 @Composable
 fun HintScreen(navController: NavController) {
+    val context = LocalContext.current // LocalContext를 통해 현재 Context 가져오기
+
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -91,7 +96,9 @@ fun HintScreen(navController: NavController) {
                 // 광고보기 버튼
                 Button(
                     onClick = {
-                        // 광고보기 동작
+                        // YouTube 링크 열기
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://youtu.be/cCW6eKySZjk?si=of94AnaHxE7jJl3Z"))
+                        context.startActivity(intent) // Intent를 사용해 브라우저 열기
                     },
                     modifier = Modifier
                         .width(208.dp)
