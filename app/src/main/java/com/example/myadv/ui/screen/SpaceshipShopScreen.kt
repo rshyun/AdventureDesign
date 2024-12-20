@@ -143,15 +143,3 @@ fun SpaceshipShopScreen(navController: NavController) {
         }
     }
 }
-
-@Preview(
-    name = "Spaceship Shop Screen Preview",
-    showBackground = true,
-    widthDp = 1280,
-    heightDp = 800
-)
-@Composable
-fun SpaceshipShopScreenPreview() {
-    val navController = rememberNavController()
-    SpaceshipShopScreen(navController)
-}

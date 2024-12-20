@@ -128,10 +128,3 @@ fun PuzzleBookScreen(navController: NavController) {
         }
     }
 }
-
-@Preview(showBackground = true, widthDp = 1280, heightDp = 800)
-@Composable
-fun PuzzleBookScreenPreview() {
-    val navController = rememberNavController()
-    PuzzleBookScreen(navController)
-}
